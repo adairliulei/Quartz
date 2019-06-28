@@ -1,0 +1,53 @@
+spring:
+  quartz:
+    #相关属性配置
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: clusteredScheduler
+            instanceId: AUTO
+            #一次最多处理几个触发器
+            batchTriggerAcquisitionMaxCount: 5
+            #在调度程序具有非常大数量的触发器需要在或接近同一时间点触发的情况下
+            #以触发计划为代价不准确地被触发
+            #batchTriggerAcquisitionFireAheadTimeWindow: 10
+          jobStore:
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+            tablePrefix: QRTZ_
+            #开启集群模式-注意需要同步两个节点的时间ntp，防止发生重复执行情况
+            isClustered: true
+            #调度实例失效的检查时间间隔
+            clusterCheckinInterval: 10000
+            useProperties: false
+            #配合batchTriggerAcquisitionMaxCount使用，防止数据损坏--以避免与特定数据库的死锁
+            acquireTriggersWithinLock: true
+            #允许最大作业延时毫秒
+            misfireThreshold: 60000
+          threadPool:
+            class: org.quartz.simpl.SimpleThreadPool
+            #线程数量固定
+            threadCount: 10
+            #优先级
+            threadPriority: 5
+            threadsInheritContextClassLoaderOfInitializingThread: true
+    #数据库方式
+    job-store-type: jdbc
+    #初始化表结构
+    #jdbc:
+      #initialize-schema: never
+  datasource:
+    druid:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://192.168.1.221:3306/demo?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false
+      username: root
+      password: 123456
+  jpa:
+    hibernate:
+      ddl-auto: create #ddl-auto:设为update表示每次都不会重新建表
+    show-sql: true
+  application:
+    name: quartz-cluster-node-49
+server:
+  port: 7049
